@@ -25,6 +25,15 @@ func TestNull(t *testing.T) {
 	}
 }
 
+func TestNesting(t *testing.T) {
+    input := `{"person":{"name":"Joe", "address":{"street":"123 Main St."}}}`
+    output := `{"person.address.street":"123 Main St.","person.name":"Joe"}`
+    out, _ := explodejson(input, ".")
+    if out != output {
+        t.Error("got", out)
+    }
+}
+
 func TestItems(t *testing.T) {
 	input := `
     [

@@ -100,7 +100,13 @@ func (e *Exploder) explode_map(m map[string]interface{}, parent string) (map[str
 	}
 	return j, nil
 }
-
+// explodes a nested JSON string to an unnested one
+// parameters to pass to the function are
+// * s: the JSON string
+// * d: the delimiter to use when unnesting the JSON object
+// {"person":{"name":"Joe", "address":{"street":"123 Main St."}}}
+// explodes to:
+// {"person.name":"Joe", "person.address.street":"123 Main St."}
 func explodejson(s string, d string) (string, error) {
 	var input interface{}
 	var exploded map[string]interface{}
