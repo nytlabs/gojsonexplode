@@ -100,43 +100,53 @@ func (e *Exploder) explode_map(m map[string]interface{}, parent string) (map[str
 	}
 	return j, nil
 }
-// explodes a nested JSON string to an unnested one
-// parameters to pass to the function are
-// * s: the JSON string
-// * d: the delimiter to use when unnesting the JSON object
-// {"person":{"name":"Joe", "address":{"street":"123 Main St."}}}
-// explodes to:
-// {"person.name":"Joe", "person.address.street":"123 Main St."}
-func explodejson(s string, d string) (string, error) {
+
+func explodejson(b []byte, d string) ([]byte, error) {
 	var input interface{}
 	var exploded map[string]interface{}
 	var out []byte
 	var err error
-	b := []byte(s)
+	//b := []byte(s)
 	err = json.Unmarshal(b, &input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	exploder := Exploder{d}
 	switch t := input.(type) {
 	case map[string]interface{}:
 		exploded, err = exploder.explode_map(t, "")
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	case []interface{}:
 		exploded, err = exploder.explode_list(t, "")
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	default:
 		// How did we get here? It is impossible!!
-		return "", errors.New("Possible error in JSON")
+		return nil, errors.New("Possible error in JSON")
 	}
 	out, err = json.Marshal(exploded)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+
+}
+
+// explodes a nested JSON string to an unnested one
+// parameters to pass to the function are
+// * s: the JSON string
+// * d: the delimiter to use when unnesting the JSON object.
+// {"person":{"name":"Joe", "address":{"street":"123 Main St."}}}
+// explodes to:
+// {"person.name":"Joe", "person.address.street":"123 Main St."}
+func explodejsonstr(s string, d string) (string, error) {
+	b := []byte(s)
+	out, err := explodejson(b, d)
 	if err != nil {
 		return "", err
 	}
 	return string(out), nil
-
 }
