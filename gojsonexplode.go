@@ -12,7 +12,7 @@ type Exploder struct {
 	delimiter string
 }
 
-func (e *Exploder) explode_list(l []interface{}, parent string) (map[string]interface{}, error) {
+func (e *Exploder) explodeList(l []interface{}, parent string) (map[string]interface{}, error) {
 	var err error
 	var key string
 	j := make(map[string]interface{})
@@ -35,7 +35,7 @@ func (e *Exploder) explode_list(l []interface{}, parent string) (map[string]inte
 			j[key] = v
 		case []interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explode_list(v, key)
+			out, err = e.explodeList(v, key)
 			if err != nil {
 				return nil, err
 			}
@@ -44,7 +44,7 @@ func (e *Exploder) explode_list(l []interface{}, parent string) (map[string]inte
 			}
 		case map[string]interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explode_map(v, key)
+			out, err = e.explodeMap(v, key)
 			if err != nil {
 				return nil, err
 			}
@@ -58,7 +58,7 @@ func (e *Exploder) explode_list(l []interface{}, parent string) (map[string]inte
 	return j, nil
 }
 
-func (e *Exploder) explode_map(m map[string]interface{}, parent string) (map[string]interface{}, error) {
+func (e *Exploder) explodeMap(m map[string]interface{}, parent string) (map[string]interface{}, error) {
 	var err error
 	j := make(map[string]interface{})
 	for k, i := range m {
@@ -78,7 +78,7 @@ func (e *Exploder) explode_map(m map[string]interface{}, parent string) (map[str
 			j[k] = v
 		case []interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explode_list(v, k)
+			out, err = e.explodeList(v, k)
 			if err != nil {
 				return nil, err
 			}
@@ -87,7 +87,7 @@ func (e *Exploder) explode_map(m map[string]interface{}, parent string) (map[str
 			}
 		case map[string]interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explode_map(v, k)
+			out, err = e.explodeMap(v, k)
 			if err != nil {
 				return nil, err
 			}
@@ -114,12 +114,12 @@ func explodejson(b []byte, d string) ([]byte, error) {
 	exploder := Exploder{d}
 	switch t := input.(type) {
 	case map[string]interface{}:
-		exploded, err = exploder.explode_map(t, "")
+		exploded, err = exploder.explodeMap(t, "")
 		if err != nil {
 			return nil, err
 		}
 	case []interface{}:
-		exploded, err = exploder.explode_list(t, "")
+		exploded, err = exploder.explodeList(t, "")
 		if err != nil {
 			return nil, err
 		}
