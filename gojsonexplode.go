@@ -101,7 +101,7 @@ func (e *Exploder) explodeMap(m map[string]interface{}, parent string) (map[stri
 	return j, nil
 }
 
-func explodejson(b []byte, d string) ([]byte, error) {
+func Explodejson(b []byte, d string) ([]byte, error) {
 	var input interface{}
 	var exploded map[string]interface{}
 	var out []byte
@@ -142,9 +142,9 @@ func explodejson(b []byte, d string) ([]byte, error) {
 // {"person":{"name":"Joe", "address":{"street":"123 Main St."}}}
 // explodes to:
 // {"person.name":"Joe", "person.address.street":"123 Main St."}
-func explodejsonstr(s string, d string) (string, error) {
+func Explodejsonstr(s string, d string) (string, error) {
 	b := []byte(s)
-	out, err := explodejson(b, d)
+	out, err := Explodejson(b, d)
 	if err != nil {
 		return "", err
 	}
