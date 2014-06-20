@@ -13,7 +13,7 @@ import (
 )
 func main() {
     input := `{"person":{"name":"Joe", "address":{"street":"123 Main St."}}}`
-    out, err := explodejsonstr(input, ".")
+    out, err := gojsonexplode.Explodejsonstr(input, ".")
     if err != nil {
         // handle error
     }   
