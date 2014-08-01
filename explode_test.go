@@ -2,13 +2,12 @@ package gojsonexplode
 
 import (
 	"testing"
-	//"fmt"
 )
 
 func TestTrue(t *testing.T) {
 	input := `[true]`
 	output := `{"0":true}`
-	//e := Exploder{"."}
+
 	out, _ := Explodejsonstr(input, ".")
 	if out != output {
 		t.Error("got", out)
@@ -18,7 +17,7 @@ func TestTrue(t *testing.T) {
 func TestNull(t *testing.T) {
 	input := `[null]`
 	output := `{"0":null}`
-	//e := Exploder{"."}
+
 	out, _ := Explodejsonstr(input, ".")
 	if out != output {
 		t.Error("got", out)

@@ -8,17 +8,13 @@ import (
 	"strconv"
 )
 
-type Exploder struct {
-	delimiter string
-}
-
-func (e *Exploder) explodeList(l []interface{}, parent string) (map[string]interface{}, error) {
+func explodeList(l []interface{}, parent string, delimiter string) (map[string]interface{}, error) {
 	var err error
 	var key string
 	j := make(map[string]interface{})
 	for k, i := range l {
 		if len(parent) > 0 {
-			key = parent + e.delimiter + strconv.Itoa(k)
+			key = parent + delimiter + strconv.Itoa(k)
 		} else {
 			key = strconv.Itoa(k)
 		}
@@ -35,7 +31,7 @@ func (e *Exploder) explodeList(l []interface{}, parent string) (map[string]inter
 			j[key] = v
 		case []interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explodeList(v, key)
+			out, err = explodeList(v, key, delimiter)
 			if err != nil {
 				return nil, err
 			}
@@ -44,7 +40,7 @@ func (e *Exploder) explodeList(l []interface{}, parent string) (map[string]inter
 			}
 		case map[string]interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explodeMap(v, key)
+			out, err = explodeMap(v, key, delimiter)
 			if err != nil {
 				return nil, err
 			}
@@ -58,12 +54,12 @@ func (e *Exploder) explodeList(l []interface{}, parent string) (map[string]inter
 	return j, nil
 }
 
-func (e *Exploder) explodeMap(m map[string]interface{}, parent string) (map[string]interface{}, error) {
+func explodeMap(m map[string]interface{}, parent string, delimiter string) (map[string]interface{}, error) {
 	var err error
 	j := make(map[string]interface{})
 	for k, i := range m {
 		if len(parent) > 0 {
-			k = parent + e.delimiter + k
+			k = parent + delimiter + k
 		}
 		switch v := i.(type) {
 		case nil:
@@ -78,7 +74,7 @@ func (e *Exploder) explodeMap(m map[string]interface{}, parent string) (map[stri
 			j[k] = v
 		case []interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explodeList(v, k)
+			out, err = explodeList(v, k, delimiter)
 			if err != nil {
 				return nil, err
 			}
@@ -87,7 +83,7 @@ func (e *Exploder) explodeMap(m map[string]interface{}, parent string) (map[stri
 			}
 		case map[string]interface{}:
 			out := make(map[string]interface{})
-			out, err = e.explodeMap(v, k)
+			out, err = explodeMap(v, k, delimiter)
 			if err != nil {
 				return nil, err
 			}
@@ -101,25 +97,25 @@ func (e *Exploder) explodeMap(m map[string]interface{}, parent string) (map[stri
 	return j, nil
 }
 
+// Explodejson takes in a  nested JSON as a byte array and a delimiter and returns an
+// exploded/flattened json byte array
 func Explodejson(b []byte, d string) ([]byte, error) {
 	var input interface{}
 	var exploded map[string]interface{}
 	var out []byte
 	var err error
-	//b := []byte(s)
 	err = json.Unmarshal(b, &input)
 	if err != nil {
 		return nil, err
 	}
-	exploder := Exploder{d}
 	switch t := input.(type) {
 	case map[string]interface{}:
-		exploded, err = exploder.explodeMap(t, "")
+		exploded, err = explodeMap(t, "", d)
 		if err != nil {
 			return nil, err
 		}
 	case []interface{}:
-		exploded, err = exploder.explodeList(t, "")
+		exploded, err = explodeList(t, "", d)
 		if err != nil {
 			return nil, err
 		}
@@ -135,7 +131,7 @@ func Explodejson(b []byte, d string) ([]byte, error) {
 
 }
 
-// explodes a nested JSON string to an unnested one
+// Explodejsonstr explodes a nested JSON string to an unnested one
 // parameters to pass to the function are
 // * s: the JSON string
 // * d: the delimiter to use when unnesting the JSON object.
