@@ -1,5 +1,5 @@
 # gojsonexplode
-======================================
+
 
 ## What is gojsonexplode?
 gojsonexplode go library to flatten/explode nested JSON. 
