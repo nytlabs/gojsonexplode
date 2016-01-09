@@ -6,6 +6,8 @@ gojsonexplode go library to flatten/explode nested JSON.
 
 ## How does it work?
 ```go
+package main
+
 import (
     "fmt"
 
@@ -16,10 +18,9 @@ func main() {
     out, err := gojsonexplode.Explodejsonstr(input, ".")
     if err != nil {
         // handle error
-    }   
-    fmt.println(out))
+    }
+    fmt.Println(out)
 }
-
 ```
 
 should print:
