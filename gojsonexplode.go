@@ -148,6 +148,14 @@ func Explodejson(b []byte, d string, depth int) ([]byte, error) {
 // parameters to pass to the function are
 // * s: the JSON string
 // * d: the delimiter to use when unnesting the JSON object.
+// * depth : the desired depth of nesting
+//   -1 = no depth limit
+//    0 = no nesting ( returns same as input )
+//    1 = only first parent will be nested, e.g. company.address
+//    2 = up until second child, e.g. company.adress.street
+//    3 = ...
+// Set to -1 if depth limit is not desired
+//
 // {"person":{"name":"Joe", "address":{"street":"123 Main St."}}}
 // explodes to:
 // {"person.name":"Joe", "person.address.street":"123 Main St."}
