@@ -12,43 +12,47 @@ func explodeList(l []interface{}, parent string, delimiter string) (map[string]i
 	var err error
 	var key string
 	j := make(map[string]interface{})
-	for k, i := range l {
-		if len(parent) > 0 {
-			key = parent + delimiter + strconv.Itoa(k)
-		} else {
-			key = strconv.Itoa(k)
-		}
-		switch v := i.(type) {
-		case nil:
-			j[key] = v
-		case int:
-			j[key] = v
-		case float64:
-			j[key] = v
-		case string:
-			j[key] = v
-		case bool:
-			j[key] = v
-		case []interface{}:
-			out := make(map[string]interface{})
-			out, err = explodeList(v, key, delimiter)
-			if err != nil {
-				return nil, err
+	if len(l) == 0 {
+		j[parent] = []interface{}{}
+	} else {
+		for k, i := range l {
+			if len(parent) > 0 {
+				key = parent + delimiter + strconv.Itoa(k)
+			} else {
+				key = strconv.Itoa(k)
 			}
-			for newkey, value := range out {
-				j[newkey] = value
+			switch v := i.(type) {
+			case nil:
+				j[key] = v
+			case int:
+				j[key] = v
+			case float64:
+				j[key] = v
+			case string:
+				j[key] = v
+			case bool:
+				j[key] = v
+			case []interface{}:
+				out := make(map[string]interface{})
+				out, err = explodeList(v, key, delimiter)
+				if err != nil {
+					return nil, err
+				}
+				for newkey, value := range out {
+					j[newkey] = value
+				}
+			case map[string]interface{}:
+				out := make(map[string]interface{})
+				out, err = explodeMap(v, key, delimiter)
+				if err != nil {
+					return nil, err
+				}
+				for newkey, value := range out {
+					j[newkey] = value
+				}
+			default:
+				// do nothing
 			}
-		case map[string]interface{}:
-			out := make(map[string]interface{})
-			out, err = explodeMap(v, key, delimiter)
-			if err != nil {
-				return nil, err
-			}
-			for newkey, value := range out {
-				j[newkey] = value
-			}
-		default:
-			// do nothing
 		}
 	}
 	return j, nil

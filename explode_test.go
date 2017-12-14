@@ -87,3 +87,18 @@ func TestItems(t *testing.T) {
 		t.Error("got", out)
 	}
 }
+
+func TestEmptyList(t *testing.T) {
+	input := `
+	{
+		"description": "a schema given for items",
+		"schema": {
+			"items": []
+		}
+	}`
+	output := `{"description":"a schema given for items","schema.items":[]}`
+	out, _ := Explodejsonstr(input, ".")
+	if out != output {
+		t.Error("got", out)
+	}
+}
