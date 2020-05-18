@@ -12,6 +12,10 @@ func explodeList(l []interface{}, parent string, delimiter string) (map[string]i
 	var err error
 	var key string
 	j := make(map[string]interface{})
+	if len(l) == 0 {
+		key = parent
+		j[key] = nil
+	}
 	for k, i := range l {
 		if len(parent) > 0 {
 			key = parent + delimiter + strconv.Itoa(k)
