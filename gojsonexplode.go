@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func explodeList(l []interface{}, parent string, delimiter string) (map[string]interface{}, error) {
+func explodeList(l []interface{}, parent string, delimiter string, depth int) (map[string]interface{}, error) {
 	var err error
 	var key string
 	j := make(map[string]interface{})
@@ -22,6 +22,12 @@ func explodeList(l []interface{}, parent string, delimiter string) (map[string]i
 		} else {
 			key = strconv.Itoa(k)
 		}
+
+		if depth == 0 {
+			j[key] = i
+			continue
+		}
+
 		switch v := i.(type) {
 		case nil:
 			j[key] = v
@@ -35,7 +41,7 @@ func explodeList(l []interface{}, parent string, delimiter string) (map[string]i
 			j[key] = v
 		case []interface{}:
 			out := make(map[string]interface{})
-			out, err = explodeList(v, key, delimiter)
+			out, err = explodeList(v, key, delimiter, (depth - 1))
 			if err != nil {
 				return nil, err
 			}
@@ -44,7 +50,7 @@ func explodeList(l []interface{}, parent string, delimiter string) (map[string]i
 			}
 		case map[string]interface{}:
 			out := make(map[string]interface{})
-			out, err = explodeMap(v, key, delimiter)
+			out, err = explodeMap(v, key, delimiter, (depth - 1))
 			if err != nil {
 				return nil, err
 			}
@@ -58,13 +64,20 @@ func explodeList(l []interface{}, parent string, delimiter string) (map[string]i
 	return j, nil
 }
 
-func explodeMap(m map[string]interface{}, parent string, delimiter string) (map[string]interface{}, error) {
+func explodeMap(m map[string]interface{}, parent string, delimiter string, depth int) (map[string]interface{}, error) {
 	var err error
+
 	j := make(map[string]interface{})
 	for k, i := range m {
 		if len(parent) > 0 {
 			k = parent + delimiter + k
 		}
+
+		if depth == 0 {
+			j[k] = i
+			continue
+		}
+
 		switch v := i.(type) {
 		case nil:
 			j[k] = v
@@ -78,7 +91,7 @@ func explodeMap(m map[string]interface{}, parent string, delimiter string) (map[
 			j[k] = v
 		case []interface{}:
 			out := make(map[string]interface{})
-			out, err = explodeList(v, k, delimiter)
+			out, err = explodeList(v, k, delimiter, (depth - 1))
 			if err != nil {
 				return nil, err
 			}
@@ -87,7 +100,7 @@ func explodeMap(m map[string]interface{}, parent string, delimiter string) (map[
 			}
 		case map[string]interface{}:
 			out := make(map[string]interface{})
-			out, err = explodeMap(v, k, delimiter)
+			out, err = explodeMap(v, k, delimiter, (depth - 1))
 			if err != nil {
 				return nil, err
 			}
@@ -103,7 +116,7 @@ func explodeMap(m map[string]interface{}, parent string, delimiter string) (map[
 
 // Explodejson takes in a  nested JSON as a byte array and a delimiter and returns an
 // exploded/flattened json byte array
-func Explodejson(b []byte, d string) ([]byte, error) {
+func Explodejson(b []byte, d string, depth int) ([]byte, error) {
 	var input interface{}
 	var exploded map[string]interface{}
 	var out []byte
@@ -114,12 +127,12 @@ func Explodejson(b []byte, d string) ([]byte, error) {
 	}
 	switch t := input.(type) {
 	case map[string]interface{}:
-		exploded, err = explodeMap(t, "", d)
+		exploded, err = explodeMap(t, "", d, depth)
 		if err != nil {
 			return nil, err
 		}
 	case []interface{}:
-		exploded, err = explodeList(t, "", d)
+		exploded, err = explodeList(t, "", d, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -139,12 +152,25 @@ func Explodejson(b []byte, d string) ([]byte, error) {
 // parameters to pass to the function are
 // * s: the JSON string
 // * d: the delimiter to use when unnesting the JSON object.
+// * depth : the desired depth of nesting
+//   -1 = no depth limit
+//    0 = no nesting ( returns same as input )
+//    1 = only first parent will be nested, e.g. company.address
+//    2 = up until second child, e.g. company.adress.street
+//    3 = ...
+// Set to -1 if depth limit is not desired
+//
 // {"person":{"name":"Joe", "address":{"street":"123 Main St."}}}
 // explodes to:
 // {"person.name":"Joe", "person.address.street":"123 Main St."}
-func Explodejsonstr(s string, d string) (string, error) {
+func Explodejsonstr(s string, d string, depth int) (string, error) {
+
+	if depth == 0 {
+		return s, nil
+	}
+
 	b := []byte(s)
-	out, err := Explodejson(b, d)
+	out, err := Explodejson(b, d, depth)
 	if err != nil {
 		return "", err
 	}
